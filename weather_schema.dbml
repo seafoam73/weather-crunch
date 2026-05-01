@@ -1,0 +1,32 @@
+Table fact_event {
+  event_id integer [pk]
+  city_id integer [ref: > dim_city.city_id]
+  description_id integer [ref: > dim_weather.weather_id]
+  date_id integer [ref: > dim_date.date_id]
+  temperature integer
+  pressure numeric
+  humidity numeric
+  wind_speed numeric
+}
+
+Table dim_city {
+  city_id integer [pk]
+  city_name varchar
+  state varchar
+  country varchar
+  zip varchar
+}
+
+Table dim_weather {
+  weather_id integer [pk]
+  weather_name varchar
+}
+
+Table dim_date {
+  date_id integer [pk]
+  full_datetime timestamp
+  year integer
+  month integer
+  day integer
+  hour integer
+}
