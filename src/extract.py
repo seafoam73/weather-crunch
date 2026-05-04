@@ -1,3 +1,4 @@
+#pulls the current weather for Springfield, Mo
 import requests
 import json
 import os
