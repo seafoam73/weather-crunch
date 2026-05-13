@@ -15,6 +15,10 @@ def transform_weather(data_A, data_B):
         "state": data_B[0]["state"]
     }
     weather_table = pd.DataFrame([weather_events])
+    weather_table['year'] = weather_table['timestamp'].dt.year
+    weather_table['month'] = weather_table['timestamp'].dt.month
+    weather_table['day'] = weather_table['timestamp'].dt.day
+    weather_table['hour'] = weather_table['timestamp'].dt.hour
     return weather_table
 
 #calls the function with the variables below only when the file itself is ran. As opposed to being imported as intended
