@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import create_engine, insert, MetaData, Table
+from sqlalchemy import create_engine, insert, MetaData, Table, select
 import os
 from dotenv import load_dotenv
 from transform import transform_weather
@@ -26,15 +26,23 @@ def weather_load():
     data_A, data_B = extract_weather()
     df = transform_weather(data_A, data_B)
     with engine.connect() as conn:
-        result = conn.execute(insert(dim_city).values(
+        existing_city = conn.execute(select(dim_city).where(dim_city.c.city_name == df["city_name"].iloc[0])).fetchone()
+        if existing_city:
+            city_id = existing_city.city_id
+        else:
+            result = conn.execute(insert(dim_city).values(
             city_name=df["city_name"].iloc[0],
             state=df["state"].iloc[0],
             country=df["country"].iloc[0]
             ))
-        city_id = result.inserted_primary_key[0]
+            city_id = result.inserted_primary_key[0]
         conn.commit()
-        result = conn.execute(insert(dim_weather).values(weather_name=df["weather_name"].iloc[0]))
-        weather_id = result.inserted_primary_key[0]
+        existing_weather = conn.execute(select(dim_weather).where(dim_weather.c.weather_name == df["weather_name"].iloc[0])).fetchone()
+        if existing_weather:
+            weather_id = existing_weather.weather_id
+        else:
+            result = conn.execute(insert(dim_weather).values(weather_name=df["weather_name"].iloc[0]))
+            weather_id = result.inserted_primary_key[0]
         conn.commit()
         result = conn.execute(insert(dim_date).values(
             full_datetime=df["full_datetime"].iloc[0],
