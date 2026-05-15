@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, insert, MetaData, Table
 import os
 from dotenv import load_dotenv
 from transform import transform_weather
@@ -11,24 +11,53 @@ load_dotenv()
 #retreives DATABASE_URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-#uses SQLalchemy to translate between pandas and PostgreSQL. Sets up the instructions to connect to to_sql()
+#uses SQLalchemy to translate between pandas and PostgreSQL. Sets up the instructions to connect to 1.reference the SQL dataset and 2.place the existing dataframes data into the correct tables
 engine = create_engine(DATABASE_URL)
 
-#calls the transform.py transformed data and puts the datafram into each SQL tables
+#Reflecting the tables to the function so it knows the PK and FKs are there
+metadata = MetaData()
+dim_city = Table("dim_city", metadata, autoload_with=engine)
+dim_weather = Table("dim_weather", metadata, autoload_with=engine)
+dim_date = Table("dim_date", metadata, autoload_with=engine)
+fact_event = Table("fact_event", metadata, autoload_with=engine)
+
+#calls the ET data and puts the dataframe into each SQL tables
 def weather_load():
     data_A, data_B = extract_weather()
     df = transform_weather(data_A, data_B)
-    city_columns = df[["city_name", "state", "country"]]
-    weather_column = df[["weather_name"]]
-    date_column = df[["full_datetime", "year", "month", "day", "hour"]]
-    fact_column = df[["temperature", "pressure", "humidity", "wind_speed"]]
-    city_columns.to_sql(name="dim_city", con=engine, if_exists='append', index=False)
-    weather_column.to_sql(name="dim_weather", con=engine, if_exists='append', index=False)
-    date_column.to_sql(name="dim_date", con=engine, if_exists='append', index=False)
-    fact_column.to_sql(name="fact_event", con=engine, if_exists='append', index=False)
+    with engine.connect() as conn:
+        result = conn.execute(insert(dim_city).values(
+            city_name=df["city_name"].iloc[0],
+            state=df["state"].iloc[0],
+            country=df["country"].iloc[0]
+            ))
+        city_id = result.inserted_primary_key[0]
+        conn.commit()
+        result = conn.execute(insert(dim_weather).values(weather_name=df["weather_name"].iloc[0]))
+        weather_id = result.inserted_primary_key[0]
+        conn.commit()
+        result = conn.execute(insert(dim_date).values(
+            full_datetime=df["full_datetime"].iloc[0],
+            year=int(df["year"].iloc[0]),
+            month=int(df["month"].iloc[0]),
+            day=int(df["day"].iloc[0]),
+            hour=int(df["hour"].iloc[0])
+            ))
+        date_id = result.inserted_primary_key[0]
+        conn.commit()
+        result = conn.execute(insert(fact_event).values(
+            city_id=city_id,
+            weather_id=weather_id,
+            date_id=date_id,
+            temperature=int(df["temperature"].iloc[0]),
+            pressure=float(df["pressure"].iloc[0]),
+            humidity=float(df["humidity"].iloc[0]),
+            wind_speed=float(df["wind_speed"].iloc[0])
+            ))
+        event_id = result.inserted_primary_key[0]
+        conn.commit()
 
 if __name__ == "__main__":
     weather_load()
     print("Data loaded successfully!")
 
-#RECOMMIT AFTER TIMESTAMP FIX!!!!!!!!!!!!!!!
