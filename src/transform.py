@@ -21,6 +21,7 @@ def transform_weather(data_A, data_B):
     weather_table['hour'] = weather_table['full_datetime'].dt.hour
     return weather_table
 
+#iterates through each city weather list, and city's state/country list and appends them to a master DataFrame
 def iterate_weather(x, y):
     frames = []
     for a, b in zip(x, y):
