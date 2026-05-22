@@ -2,8 +2,8 @@ import pandas as pd
 from sqlalchemy import create_engine, insert, MetaData, Table, select
 import os
 from dotenv import load_dotenv
-from transform import transform_weather
-from extract import extract_weather
+from transform import transform_weather, iterate_weather
+from extract import url_feed, lat_lon, extract_weather, missouri_prime
 
 # Load environment variables from .env
 load_dotenv()
@@ -21,51 +21,56 @@ dim_weather = Table("dim_weather", metadata, autoload_with=engine)
 dim_date = Table("dim_date", metadata, autoload_with=engine)
 fact_event = Table("fact_event", metadata, autoload_with=engine)
 
-#calls the ET data and puts the dataframe into each SQL tables
+url_a = url_feed(missouri_prime)
+url_b = lat_lon(url_feed(missouri_prime))
+
+#calls the ET data as a 5 row DataFrame, iterates through each row and puts the data from that row into each corresponding SQL tables.
 def weather_load():
-    data_A, data_B = extract_weather()
-    df = transform_weather(data_A, data_B)
-    with engine.connect() as conn:
-        existing_city = conn.execute(select(dim_city).where(dim_city.c.city_name == df["city_name"].iloc[0])).fetchone()
-        if existing_city:
-            city_id = existing_city.city_id
-        else:
-            result = conn.execute(insert(dim_city).values(
-            city_name=df["city_name"].iloc[0],
-            state=df["state"].iloc[0],
-            country=df["country"].iloc[0]
-            ))
-            city_id = result.inserted_primary_key[0]
-        conn.commit()
-        existing_weather = conn.execute(select(dim_weather).where(dim_weather.c.weather_name == df["weather_name"].iloc[0])).fetchone()
-        if existing_weather:
-            weather_id = existing_weather.weather_id
-        else:
-            result = conn.execute(insert(dim_weather).values(weather_name=df["weather_name"].iloc[0]))
-            weather_id = result.inserted_primary_key[0]
-        conn.commit()
-        result = conn.execute(insert(dim_date).values(
-            full_datetime=df["full_datetime"].iloc[0],
-            year=int(df["year"].iloc[0]),
-            month=int(df["month"].iloc[0]),
-            day=int(df["day"].iloc[0]),
-            hour=int(df["hour"].iloc[0])
-            ))
-        date_id = result.inserted_primary_key[0]
-        conn.commit()
-        result = conn.execute(insert(fact_event).values(
-            city_id=city_id,
-            weather_id=weather_id,
-            date_id=date_id,
-            temperature=int(df["temperature"].iloc[0]),
-            pressure=float(df["pressure"].iloc[0]),
-            humidity=float(df["humidity"].iloc[0]),
-            wind_speed=float(df["wind_speed"].iloc[0])
-            ))
-        event_id = result.inserted_primary_key[0]
-        conn.commit()
+    data_geo, data_weather = extract_weather(url_a, url_b)
+    df = iterate_weather(data_geo, data_weather)
+    for index, row in df.iterrows():
+        with engine.connect() as conn:
+            existing_city = conn.execute(select(dim_city).where(dim_city.c.city_name == row["city_name"])).fetchone()
+            if existing_city:
+                city_id = existing_city.city_id
+            else:
+                result = conn.execute(insert(dim_city).values(
+                city_name=row["city_name"],
+                state=row["state"],
+                country=row["country"]
+                ))
+                city_id = result.inserted_primary_key[0]
+            conn.commit()
+            existing_weather = conn.execute(select(dim_weather).where(dim_weather.c.weather_name == row["weather_name"])).fetchone()
+            if existing_weather:
+                weather_id = existing_weather.weather_id
+            else:
+                result = conn.execute(insert(dim_weather).values(weather_name=row["weather_name"]))
+                weather_id = result.inserted_primary_key[0]
+            conn.commit()
+            result = conn.execute(insert(dim_date).values(
+                full_datetime=row["full_datetime"],
+                year=int(row["year"]),
+                month=int(row["month"]),
+                day=int(row["day"]),
+                hour=int(row["hour"])
+                ))
+            date_id = result.inserted_primary_key[0]
+            conn.commit()
+            result = conn.execute(insert(fact_event).values(
+                city_id=city_id,
+                weather_id=weather_id,
+                date_id=date_id,
+                temperature=int(row["temperature"]),
+                pressure=float(row["pressure"]),
+                humidity=float(row["humidity"]),
+                wind_speed=float(row["wind_speed"])
+                ))
+            event_id = result.inserted_primary_key[0]
+            conn.commit()
 
 if __name__ == "__main__":
     weather_load()
     print("Data loaded successfully!")
+
 
