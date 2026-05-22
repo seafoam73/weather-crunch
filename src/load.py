@@ -8,7 +8,7 @@ from extract import url_feed, lat_lon, extract_weather, missouri_prime
 # Load environment variables from .env
 load_dotenv()
 
-#retreives DATABASE_URL from .env
+#retrieves DATABASE_URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 #uses SQLalchemy to translate between pandas and PostgreSQL. Sets up the instructions to connect to 1.reference the SQL dataset and 2.place the existing dataframes data into the correct tables
