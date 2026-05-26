@@ -1,0 +1,19 @@
+name: weather_crunch_cron
+on:
+  schedule:
+    # runs tests every day at 7am
+    - cron: '0 7 * * *'
+      timezone: "America/Chicago"
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  daily:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v6
+  
+      - name: Weather API ETL
+        run: python3 src/load.py
