@@ -33,6 +33,9 @@ def lat_lon(data):
         print(response.status_code)
         print(response.json())
         my_list = response.json()
+        if not my_list:
+            print(f"EMPTY RESPONSE for URL: {i}")
+            continue
         LAT = my_list[0]["lat"]
         LON = my_list[0]["lon"]
         url_plug.append(f"https://api.openweathermap.org/data/2.5/weather?lat={LAT}&lon={LON}&appid={API_KEY}&units=imperial")
