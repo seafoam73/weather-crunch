@@ -7,8 +7,6 @@ import os
 # Load environment variables from .env
 #load_dotenv() # handled by load.py / GitHub Actions sets env vars directly
 
-API_KEY = os.getenv("API_KEY")
-
 missouri_prime = [
     {"City": "Columbia", "State": "MO", "Country": "US"}, 
     {"City": "Kansas City", "State": "MO", "Country": "US"}, 
@@ -19,6 +17,7 @@ missouri_prime = [
 
 #creates the geo URL's to provide the lat/lon for the weather api, and the country/state for the transform.py function
 def url_feed(x):
+    API_KEY = os.getenv("API_KEY")
     print(f"API_KEY value: {API_KEY}")
     city_url= [] 
     for i in x:
@@ -27,6 +26,7 @@ def url_feed(x):
 
 #each city's lat/lon to build the weather URLs.
 def lat_lon(data):
+    API_KEY = os.getenv("API_KEY")
     url_plug = []
     for i in data:
         response = requests.get(i)
