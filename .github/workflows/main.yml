@@ -1,8 +1,8 @@
 name: weather_crunch_cron
 on:
   schedule:
-    # runs tests every day at 9am
-    - cron: '0 14 * * *'
+    # runs tests every day at 7am CST or 12 PM UTC
+    - cron: '0 12 * * *'
   workflow_dispatch:
 permissions:
   contents: read
