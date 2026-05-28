@@ -1,12 +1,13 @@
 import pandas as pd
 from sqlalchemy import create_engine, insert, MetaData, Table, select
 import os
-from dotenv import load_dotenv
+print(f"API_KEY at load start: {os.getenv('API_KEY')}")
+# from dotenv import load_dotenv
 from transform import transform_weather, iterate_weather
 from extract import url_feed, lat_lon, extract_weather, missouri_prime
 
 # Load environment variables from .env
-load_dotenv()
+#load_dotenv() # handled by load.py / GitHub Actions sets env vars directly
 
 #retrieves DATABASE_URL from .env
 DATABASE_URL = os.getenv("DATABASE_URL")
