@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env
 load_dotenv()
 
-API_KEY = os.getenv("OPENWEATHER_API_KEY")
+API_KEY = os.getenv("API_KEY")
 
 missouri_prime = [
     {"City": "Columbia", "State": "MO", "Country": "US"}, 
