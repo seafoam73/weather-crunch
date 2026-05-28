@@ -30,7 +30,8 @@ def lat_lon(data):
     url_plug = []
     for i in data:
         response = requests.get(i)
-        response = requests.get(i)
+        print(response.status_code)
+        print(response.json())
         my_list = response.json()
         LAT = my_list[0]["lat"]
         LON = my_list[0]["lon"]
