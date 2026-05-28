@@ -17,15 +17,6 @@ jobs:
         uses: py-actions/py-dependency-install@v4
         with:
           path: "requirements.txt"
-      - name: Debug secret
-        env:
-          API_KEY: ${{ secrets.WEATHER_KEY }}
-        run: |
-          if [ -z "$API_KEY" ]; then
-            echo "API_KEY is empty"
-          else
-            echo "API_KEY is set"
-          fi
       - name: Weather API ETL
         env:
           API_KEY: ${{ secrets.WEATHER_KEY }}
