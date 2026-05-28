@@ -1,7 +1,6 @@
 import pandas as pd
 from sqlalchemy import create_engine, insert, MetaData, Table, select
 import os
-print("DEBUG_V2: API_KEY =", os.getenv('API_KEY'))
 # from dotenv import load_dotenv
 from transform import transform_weather, iterate_weather
 from extract import url_feed, lat_lon, extract_weather, missouri_prime
@@ -9,24 +8,24 @@ from extract import url_feed, lat_lon, extract_weather, missouri_prime
 # Load environment variables from .env
 #load_dotenv() # handled by load.py / GitHub Actions sets env vars directly
 
-#retrieves DATABASE_URL from .env
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-#uses SQLalchemy to translate between pandas and PostgreSQL. Sets up the instructions to connect to 1.reference the SQL dataset and 2.place the existing dataframes data into the correct tables
-engine = create_engine(DATABASE_URL)
-
-#Reflecting the tables to the function so it knows the PK and FKs are there
-metadata = MetaData()
-dim_city = Table("dim_city", metadata, autoload_with=engine)
-dim_weather = Table("dim_weather", metadata, autoload_with=engine)
-dim_date = Table("dim_date", metadata, autoload_with=engine)
-fact_event = Table("fact_event", metadata, autoload_with=engine)
-
-url_a = url_feed(missouri_prime)
-url_b = lat_lon(url_feed(missouri_prime))
-
 #calls the ET data as a 5 row DataFrame, iterates through each row and puts the data from that row into each corresponding SQL tables.
 def weather_load():
+    #retrieves DATABASE_URL from .env
+    DATABASE_URL = os.getenv("DATABASE_URL")
+
+    #uses SQLalchemy to translate between pandas and PostgreSQL. Sets up the instructions to connect to 1.reference the SQL dataset and 2.place the existing dataframes data into the correct tables
+    engine = create_engine(DATABASE_URL)
+
+    #Reflecting the tables to the function so it knows the PK and FKs are there
+    metadata = MetaData()
+    dim_city = Table("dim_city", metadata, autoload_with=engine)
+    dim_weather = Table("dim_weather", metadata, autoload_with=engine)
+    dim_date = Table("dim_date", metadata, autoload_with=engine)
+    fact_event = Table("fact_event", metadata, autoload_with=engine)
+
+    url_a = url_feed(missouri_prime)
+    url_b = lat_lon(url_feed(missouri_prime))
+    
     data_geo, data_weather = extract_weather(url_a, url_b)
     df = iterate_weather(data_geo, data_weather)
     for index, row in df.iterrows():
