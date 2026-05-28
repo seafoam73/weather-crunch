@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine, insert, MetaData, Table, select
 import os
-print(f"API_KEY at load start: {os.getenv('API_KEY')}")
+print("DEBUG_V2: API_KEY =", os.getenv('API_KEY'))
 # from dotenv import load_dotenv
 from transform import transform_weather, iterate_weather
 from extract import url_feed, lat_lon, extract_weather, missouri_prime
