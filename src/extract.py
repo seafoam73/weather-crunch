@@ -19,6 +19,7 @@ missouri_prime = [
 
 #creates the geo URL's to provide the lat/lon for the weather api, and the country/state for the transform.py function
 def url_feed(x):
+    print(f"API_KEY value: {API_KEY}")
     city_url= [] 
     for i in x:
         city_url.append(f"http://api.openweathermap.org/geo/1.0/direct?q={i['City']},{i['State']},{i['Country']}&limit=1&appid={API_KEY}")
