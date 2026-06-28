@@ -17,6 +17,8 @@ across four dashboard pages covering current conditions, 21-day history, city-le
 dive, and tomorrow's forecast.
 
 ## Project Structure
+
+```
 weather_crunch/
 
 ├── src/
@@ -35,6 +37,7 @@ weather_crunch/
 
 ├── .github/workflows/    # GitHub Actions cron schedule (4x daily, UTC)
 └── weather_schema_v1.dbml  # Star schema design (dbdiagram.io)
+```
 
 ## Data Model
 
