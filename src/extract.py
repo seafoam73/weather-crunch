@@ -24,11 +24,11 @@ def url_feed(cities):
         city_url.append(f"http://api.openweathermap.org/geo/1.0/direct?q={i['City']},{i['State']},{i['Country']}&limit=1&appid={API_KEY}")
     return city_url
 
-#Utilizes each city's lat/lon to build the weather URLs that are extracted
-def lat_lon(data):
+#Utilizes each city's lat/lon (geo location) to build the weather URLs that are extracted
+def lat_lon(cities_url):
     API_KEY = os.getenv("API_KEY")
     url_plug = []
-    for i in data:
+    for i in cities_url:
         response = requests.get(i)
         my_list = response.json()
         if not my_list:
@@ -56,5 +56,5 @@ def extract_weather(geo_url, weather_url):
 #only run extract_weather() if this file is being run directly. The function only fires when you explicitly run python src/extract.py.
 if __name__ == "__main__":
     urls = url_feed(missouri_prime)
-    extract_weather(urls, lat_lon(urls))
+    print(extract_weather(urls, lat_lon(urls)))
     
