@@ -20,7 +20,7 @@ missouri_prime = [
 def url_feed(cities):
     API_KEY = os.getenv("API_KEY")
     city_url= [] 
-    for i in x:
+    for i in cities:
         city_url.append(f"http://api.openweathermap.org/geo/1.0/direct?q={i['City']},{i['State']},{i['Country']}&limit=1&appid={API_KEY}")
     return city_url
 
@@ -43,7 +43,7 @@ def lat_lon(data):
 def extract_weather(geo_url, weather_url):
     data_geo =[]
     data_weather =[]
-    for a, b in zip(data_geo, data_weather):
+    for a, b in zip(geo_url, weather_url):
         response_a = requests.get(a)
         response_b = requests.get(b)
         combined_data_a = response_a.json()
