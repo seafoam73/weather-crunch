@@ -2,11 +2,12 @@
 import requests
 import json
 import os
+#Only necessary when the .env variables are not run externally i.e. Github. Used when ran locally
 #from dotenv import load_dotenv
-
-# Load environment variables from .env
+#Load environment variables from .env
 #load_dotenv() # handled by load.py / GitHub Actions sets env vars directly
 
+#Creates a list of city dictionaries used as the main keys to pull the data from OpenWeatherMap
 missouri_prime = [
     {"City": "Columbia", "State": "MO", "Country": "US"}, 
     {"City": "Kansas City", "State": "MO", "Country": "US"}, 
@@ -16,25 +17,21 @@ missouri_prime = [
 ]
 
 #creates the geo URL's to provide the lat/lon for the weather api, and the country/state for the transform.py function
-def url_feed(x):
+def url_feed(cities):
     API_KEY = os.getenv("API_KEY")
-    print(f"API_KEY value: {API_KEY}")
     city_url= [] 
     for i in x:
         city_url.append(f"http://api.openweathermap.org/geo/1.0/direct?q={i['City']},{i['State']},{i['Country']}&limit=1&appid={API_KEY}")
     return city_url
 
-#each city's lat/lon to build the weather URLs.
+#Utilizes each city's lat/lon to build the weather URLs that are extracted
 def lat_lon(data):
     API_KEY = os.getenv("API_KEY")
     url_plug = []
     for i in data:
         response = requests.get(i)
-        print(response.status_code)
-        print(response.json())
         my_list = response.json()
         if not my_list:
-            print(f"EMPTY RESPONSE for URL: {i}")
             continue
         LAT = my_list[0]["lat"]
         LON = my_list[0]["lon"]
@@ -43,10 +40,10 @@ def lat_lon(data):
 
 
 #takes the geo URLs and the city weather URls, returns both, geo as a list of list and weather as a list of dictionaries
-def extract_weather(x, y):
+def extract_weather(geo_url, weather_url):
     data_geo =[]
     data_weather =[]
-    for a, b in zip(x, y):
+    for a, b in zip(data_geo, data_weather):
         response_a = requests.get(a)
         response_b = requests.get(b)
         combined_data_a = response_a.json()
@@ -58,5 +55,6 @@ def extract_weather(x, y):
 
 #only run extract_weather() if this file is being run directly. The function only fires when you explicitly run python src/extract.py.
 if __name__ == "__main__":
-    extract_weather(url_feed(missouri_prime), lat_lon(url_feed(missouri_prime)))
+    urls = url_feed(missouri_prime)
+    extract_weather(urls, lat_lon(urls))
     
