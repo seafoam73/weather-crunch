@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 
-#takes the 7 fields we want from the weather API and the country/state details from the geo API, and pulls them from the API JSONs and into a DataFrame
+#The function takes the 7 fields we want from the weather API and the country/state details from the geo API for each of the 5 cities, and pulls them from the API JSONs and places the data into a DataFrame
 def transform_weather(data_geo, data_weather):
     weather_events = {
         "city_name": data_weather["name"],
@@ -21,10 +21,10 @@ def transform_weather(data_geo, data_weather):
     weather_table['hour'] = weather_table['full_datetime'].dt.hour
     return weather_table
 
-#iterates through each city weather list, and city's state/country list and appends the called items to a master DataFrame
-def iterate_weather(x, y):
+#iterates through each city's weather list and the geo API responses list above and appends the called items to a master DataFrame
+def iterate_weather(data_geo_list, data_weather_list):
     frames = []
-    for a, b in zip(x, y):
+    for a, b in zip(data_geo_list, data_weather_list):
         frames.append(transform_weather(a, b))
     full_table = pd.concat(frames)
     return full_table
